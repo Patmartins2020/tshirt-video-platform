@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Design</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f8f9fa;
+      margin: 0;
+    }
+
+    .form-box {
+      max-width: 500px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      background: #111;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h1>Upload Design</h1>
+
+    <input type="text" id="title" placeholder="Design title" />
+    <textarea id="description" placeholder="Design description"></textarea>
+    <input type="number" id="price" placeholder="Price" />
+    <input type="file" id="imageInput" accept="image/*" />
+    <button type="button" onclick="uploadDesign()">Upload</button>
+  </div>
+
+  <script>
+    async function uploadDesign() {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token");
+
+      if (!user || !token) {
+        alert("Please login first");
+        window.location.href = "./login.html";
+        return;
+      }
+
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const price = document.getElementById("price").value.trim();
+      const imageFile = document.getElementById("imageInput").files[0];
+
+      if (!title) {
+        alert("Please enter a title");
+        return;
+      }
+
+      if (!imageFile) {
+        alert("Please select an image");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("userId", user.id);
+      formData.append("designType", "tshirt");
+      formData.append("image", imageFile);
+
+      try {
+        const response = await fetch("http://localhost:5000/api/designs/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Design uploaded successfully");
+          window.location.href = "./dashboard.html";
+        } else {
+          alert(result.message || "Upload failed");
+        }
+      } catch (error) {
+        console.error("UPLOAD ERROR:", error);
+        alert("Upload failed");
+      }
+    }
+  </script>
+</body>
+</html>

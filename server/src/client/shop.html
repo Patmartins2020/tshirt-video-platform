@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>T-Shirt Store</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f8f9fa;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #222;
+    }
+
+    #storeGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+      background: #eee;
+    }
+
+    .product-card h3 {
+      margin: 12px 0 6px;
+      font-size: 20px;
+    }
+
+    .product-card p {
+      color: #555;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .product-card strong {
+      display: block;
+      margin-top: 12px;
+      font-size: 18px;
+      color: #111;
+    }
+
+    .buy-btn {
+      margin-top: 15px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: black;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .buy-btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Our T-Shirt Store</h1>
+  <div id="storeGrid"></div>
+
+  <script>
+  const storeGrid = document.getElementById("storeGrid");
+
+  function getImagePath(imageUrl) {
+    if (!imageUrl || imageUrl.trim() === "") {
+      return "http://localhost:5000/uploads/default-shirt.jpg";
+    }
+
+    if (imageUrl.startsWith("http")) {
+      return imageUrl;
+    }
+
+    if (imageUrl.startsWith("uploads/")) {
+      return `http://localhost:5000/${imageUrl}`;
+    }
+
+    return `http://localhost:5000/uploads/${imageUrl}`;
+  }
+
+  async function loadProducts() {
+    try {
+      const response = await fetch("http://localhost:5000/api/designs/all");
+      const result = await response.json();
+
+      console.log("SHOP DATA:", result);
+
+      if (!result.success) {
+        storeGrid.innerHTML = "<p>Failed to load products.</p>";
+        return;
+      }
+
+      const products = result.designs;
+      storeGrid.innerHTML = "";
+
+      products.forEach((product) => {
+        const imagePath = getImagePath(product.imageUrl);
+
+        storeGrid.innerHTML += `
+          <div class="product-card">
+            <img src="${imagePath}" alt="${product.title}">
+            <h3>${product.title}</h3>
+            <p>${product.description || "No description"}</p>
+            <strong>$${product.price || 0}</strong>
+            <button class="buy-btn">Buy Now</button>
+          </div>
+        `;
+      });
+
+    } catch (error) {
+      console.error("SHOP ERROR:", error);
+      storeGrid.innerHTML = "<p>Failed to load products.</p>";
+    }
+  }
+
+  loadProducts();
+</script>
+</body>
+</html>

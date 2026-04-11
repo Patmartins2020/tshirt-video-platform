@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register User</title>
+</head>
+<body>
+  <h1>Register User</h1>
+
+  <form id="registerForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Register</button>
+  </form>
+
+  <script>
+    console.log("REGISTER PAGE SCRIPT LOADED");
+
+    const form = document.getElementById("registerForm");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      console.log("FORM SUBMITTED");
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password
+          })
+        });
+
+        console.log("STATUS:", response.status);
+
+        const data = await response.json();
+        console.log("SERVER RESPONSE:", data);
+
+        if (response.ok) {
+          alert(data.message || "Registration successful");
+          form.reset();
+        } else {
+          alert(data.message || "Registration failed");
+        }
+
+      } catch (error) {
+        console.error("REAL FETCH ERROR:", error);
+        alert("Server connection error");
+      }
+    });
+  </script>
+</body>
+</html>
