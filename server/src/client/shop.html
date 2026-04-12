@@ -126,7 +126,9 @@
             <h3>${product.title}</h3>
             <p>${product.description || "No description"}</p>
             <strong>$${product.price || 0}</strong>
-            <button class="buy-btn">Buy Now</button>
+           <a href="product.html?id=${product.id}">
+  <button class="buy-btn">Buy Now</button>
+</a>
           </div>
         `;
       });

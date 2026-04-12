@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+      background: #f8f9fa;
+    }
+    .box {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box" id="checkoutBox"></div>
+
+  <script>
+  const params = new URLSearchParams(window.location.search);
+
+  const id = params.get("id");
+  const size = params.get("size");
+  const color = params.get("color");
+  const qty = Number(params.get("qty"));
+
+  async function loadCheckout() {
+    try {
+      const res = await fetch("http://localhost:5000/api/designs/all");
+      const data = await res.json();
+
+      const product = data.designs.find(item => item.id == id);
+
+      if (!product) {
+        document.getElementById("checkoutBox").innerHTML =
+          "<p>Product not found.</p>";
+        return;
+      }
+
+      const total = product.price * qty;
+
+      document.getElementById("checkoutBox").innerHTML = `
+        <h1>Checkout</h1>
+        <p><strong>Product:</strong> ${product.title}</p>
+        <p><strong>Size:</strong> ${size}</p>
+        <p><strong>Color:</strong> ${color}</p>
+        <p><strong>Quantity:</strong> ${qty}</p>
+        <p><strong>Unit Price:</strong> $${product.price}</p>
+        <h2>Total: $${total}</h2>
+
+        <hr style="margin:20px 0;">
+
+        <h3>Customer Details</h3>
+
+        <input id="fullName" type="text" placeholder="Full Name"
+          style="width:100%;padding:10px;margin:8px 0;"><br>
+
+        <input id="email" type="email" placeholder="Email Address"
+          style="width:100%;padding:10px;margin:8px 0;"><br>
+
+        <input id="phone" type="text" placeholder="Phone Number"
+          style="width:100%;padding:10px;margin:8px 0;"><br>
+
+        <textarea id="address" placeholder="Delivery Address"
+          style="width:100%;padding:10px;margin:8px 0;"></textarea><br>
+
+        <button onclick="continuePayment(${total})"
+          style="padding:12px 20px;background:black;color:white;border:none;border-radius:6px;width:100%;">
+          Continue Payment
+        </button>
+      `;
+    } catch (error) {
+      document.getElementById("checkoutBox").innerHTML =
+        "<p>Checkout failed.</p>";
+    }
+  }
+
+  function continuePayment(total) {
+    const fullName = document.getElementById("fullName").value;
+    const email = document.getElementById("email").value;
+    const phone = document.getElementById("phone").value;
+    const address = document.getElementById("address").value;
+
+    if (!fullName || !email || !phone || !address) {
+      alert("Please fill all customer details");
+      return;
+    }
+
+    localStorage.setItem("checkoutCustomer", JSON.stringify({
+      fullName,
+      email,
+      phone,
+      address,
+      total
+    }));
+
+    window.location.href = "payment.html";
+  }
+
+  loadCheckout();
+</script>
+</body>
+</html>

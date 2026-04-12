@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payment</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+      background: #f8f9fa;
+    }
+    .box {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      background: black;
+      color: white;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="box" id="paymentBox"></div>
+
+  <script>
+    const customer = JSON.parse(localStorage.getItem("checkoutCustomer"));
+
+    if (!customer) {
+      document.getElementById("paymentBox").innerHTML =
+        "<p>No checkout data found.</p>";
+    } else {
+      document.getElementById("paymentBox").innerHTML = `
+        <h1>Payment Summary</h1>
+        <p><strong>Name:</strong> ${customer.fullName}</p>
+        <p><strong>Email:</strong> ${customer.email}</p>
+        <p><strong>Phone:</strong> ${customer.phone}</p>
+        <p><strong>Address:</strong> ${customer.address}</p>
+        <h2>Total: $${customer.total}</h2>
+        <button onclick="payNow()">Pay Now</button>
+      `;
+    }
+
+    function payNow() {
+      alert("Payment gateway integration comes next 🔥");
+    }
+  </script>
+</body>
+</html>
