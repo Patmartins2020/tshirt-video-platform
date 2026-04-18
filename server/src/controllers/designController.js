@@ -1,55 +1,114 @@
-const db = require("../services/db");
+const fs = require("fs");
+const path = require("path");
 
-// upload new design
-exports.uploadDesign = async (req, res) => {
+const dataFile = path.join(__dirname, "../data/designs.json");
+
+function ensureFile() {
+  const dir = path.dirname(dataFile);
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  if (!fs.existsSync(dataFile)) {
+    fs.writeFileSync(dataFile, "[]");
+  }
+}
+
+function readDesigns() {
+  ensureFile();
+  const raw = fs.readFileSync(dataFile, "utf8");
+  return JSON.parse(raw || "[]");
+}
+
+function writeDesigns(designs) {
+  ensureFile();
+  fs.writeFileSync(dataFile, JSON.stringify(designs, null, 2));
+}
+
+const uploadDesign = (req, res) => {
   try {
-    console.log("🔥 UPLOAD HIT");
-    console.log("REQ BODY:", req.body);
-    console.log("REQ FILE:", req.file);
+    console.log("🔥 uploadDesign hit");
 
-    const { title, description, price, userId } = req.body;
-    const imageUrl = req.file ? req.file.filename : null;
+    const designs = readDesigns();
 
-    const [result] = await db.query(
-      "INSERT INTO designs (title, description, price, imageUrl, userId) VALUES (?, ?, ?, ?, ?)",
-      [title, description, price, imageUrl, userId]
-    );
+    const newDesign = {
+      id: Date.now(),
+      title: req.body.title || "Untitled",
+      description: req.body.description || "",
+      price: Number(req.body.price || 0),
+      userId: req.body.userId || "guest",
+      imageUrl: req.file ? req.file.filename : "",
+      createdAt: new Date().toISOString()
+    };
 
-    console.log("✅ INSERT SUCCESS:", result);
+    designs.push(newDesign);
+    writeDesigns(designs);
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Design uploaded successfully"
+      design: newDesign
     });
   } catch (error) {
-    console.error("❌ UPLOAD ERROR:", error);
-
-    res.status(500).json({
+    console.error("UPLOAD ERROR:", error);
+    return res.status(500).json({
       success: false,
-      message: "Upload failed"
+      message: "Upload failed",
+      error: error.message
     });
   }
 };
-// get all designs for store
-exports.getAllDesigns = async (req, res) => {
+
+const getAllDesigns = (req, res) => {
   try {
-    console.log("🔥 getAllDesigns controller hit");
+    console.log("🔥 getAllDesigns hit");
+    console.log("📁 dataFile:", dataFile);
 
-    const [designs] = await db.query(
-      "SELECT * FROM designs ORDER BY id DESC"
-    );
+    const designs = readDesigns();
 
-    res.json({
+    console.log("✅ designs loaded:", designs);
+
+    return res.json({
       success: true,
       designs
     });
   } catch (error) {
-    console.error("GET ALL DESIGNS ERROR:", error);
-
-    res.status(500).json({
+    console.error("GET ALL ERROR:", error);
+    return res.status(500).json({
       success: false,
       message: "Failed to load all products",
       error: error.message
     });
   }
+};
+
+const getMyDesigns = (req, res) => {
+  try {
+    console.log("🔥 getMyDesigns hit");
+
+    const { userId } = req.params;
+    const designs = readDesigns();
+
+    const filtered = designs.filter(
+      item => String(item.userId) === String(userId)
+    );
+
+    return res.json({
+      success: true,
+      designs: filtered
+    });
+  } catch (error) {
+    console.error("GET MY ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load user products",
+      error: error.message
+    });
+  }
+};
+
+module.exports = {
+  uploadDesign,
+  getAllDesigns,
+  getMyDesigns
 };

@@ -1,62 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Register User</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TeePlatform Register</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f172a,#1d4ed8,#111827);
+  padding:20px;
+}
+
+.register-box{
+  width:100%;
+  max-width:460px;
+  background:white;
+  border-radius:18px;
+  padding:35px 28px;
+  box-shadow:0 18px 45px rgba(0,0,0,.18);
+}
+
+.logo{
+  text-align:center;
+  font-size:32px;
+  font-weight:bold;
+  color:#111827;
+  margin-bottom:10px;
+}
+
+.sub{
+  text-align:center;
+  color:#666;
+  margin-bottom:28px;
+}
+
+.input-group{
+  margin-bottom:18px;
+}
+
+.input-group label{
+  display:block;
+  margin-bottom:7px;
+  font-size:14px;
+  font-weight:bold;
+  color:#444;
+}
+
+.input-group input{
+  width:100%;
+  padding:14px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-size:15px;
+}
+
+.input-group input:focus{
+  outline:none;
+  border-color:#2563eb;
+}
+
+.register-btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#111827;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+.register-btn:hover{
+  background:#000;
+}
+
+.bottom-text{
+  margin-top:18px;
+  text-align:center;
+  font-size:14px;
+  color:#666;
+}
+
+.bottom-text a{
+  color:#2563eb;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+.note{
+  margin-top:18px;
+  background:#f3f4f6;
+  padding:12px;
+  border-radius:10px;
+  font-size:13px;
+  color:#555;
+}
+
+@media(max-width:500px){
+  .register-box{
+    padding:28px 20px;
+  }
+}
+</style>
+<link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
-  <h1>Register User</h1>
 
-  <form id="registerForm">
-    <input type="text" id="name" placeholder="Name" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Register</button>
-  </form>
+<div class="register-box">
 
-  <script>
-    console.log("REGISTER PAGE SCRIPT LOADED");
+<div class="logo">TeePlatform</div>
+<div class="sub">Create your seller / buyer account</div>
 
-    const form = document.getElementById("registerForm");
+<form id="registerForm">
 
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      console.log("FORM SUBMITTED");
+<div class="input-group">
+<label>Full Name</label>
+<input type="text" id="name" placeholder="Enter full name" required>
+</div>
 
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+<div class="input-group">
+<label>Email Address</label>
+<input type="email" id="email" placeholder="Enter your email" required>
+</div>
 
-      try {
-        const response = await fetch("http://127.0.0.1:5000/api/auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password
-          })
-        });
+<div class="input-group">
+<label>Password</label>
+<input type="password" id="password" placeholder="Create password" required>
+</div>
 
-        console.log("STATUS:", response.status);
+<button type="submit" class="register-btn">
+Create Account
+</button>
 
-        const data = await response.json();
-        console.log("SERVER RESPONSE:", data);
+</form>
 
-        if (response.ok) {
-          alert(data.message || "Registration successful");
-          form.reset();
-        } else {
-          alert(data.message || "Registration failed");
-        }
+<div class="bottom-text">
+Already registered?
+<a href="login.html">Login Here</a>
+</div>
 
-      } catch (error) {
-        console.error("REAL FETCH ERROR:", error);
-        alert("Server connection error");
-      }
-    });
-  </script>
+<div class="note">
+Open your account to upload products, manage orders and sell online.
+</div>
+
+</div>
+
+<script>
+const form = document.getElementById("registerForm");
+
+form.addEventListener("submit", async (e)=>{
+
+e.preventDefault();
+
+const fullName =
+document.getElementById("name").value.trim();
+
+const email =
+document.getElementById("email").value.trim();
+
+const password =
+document.getElementById("password").value.trim();
+
+if(password.length < 4){
+alert("Password must be at least 4 characters");
+return;
+}
+
+try{
+
+const response = await fetch(
+"http://localhost:5000/api/auth/register",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+fullName,
+email,
+password
+})
+});
+
+const data = await response.json();
+
+if(data.success){
+
+alert("Registration successful");
+
+window.location.href = "login.html";
+
+}else{
+
+alert(data.message || "Registration failed");
+
+}
+
+}catch(error){
+
+console.log(error);
+alert("Server connection error");
+
+}
+
+});
+</script>
+
 </body>
 </html>

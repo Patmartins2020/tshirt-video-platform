@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Orders</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f6f9;
+}
+
+header{
+  background:#111;
+  color:#fff;
+  padding:18px 25px;
+  font-size:28px;
+  font-weight:bold;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:25px;
+}
+
+.top-cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+  margin-bottom:25px;
+}
+
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+
+.card h3{
+  margin:0;
+  font-size:15px;
+  color:#666;
+}
+
+.card .num{
+  margin-top:10px;
+  font-size:32px;
+  font-weight:bold;
+  color:#111;
+}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+input,select{
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:8px;
+}
+
+input{
+  flex:1;
+  min-width:220px;
+}
+
+select{
+  min-width:180px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+
+th{
+  background:#111;
+  color:#fff;
+  text-align:left;
+  padding:14px;
+  font-size:14px;
+}
+
+td{
+  padding:14px;
+  border-bottom:1px solid #eee;
+  font-size:14px;
+  vertical-align:top;
+}
+
+tr:hover{
+  background:#fafafa;
+}
+
+.badge{
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  display:inline-block;
+}
+
+.pending{background:#fff4cc;color:#8a6d00;}
+.paid{background:#d8f5dc;color:#0d6b2f;}
+.shipped{background:#d9ecff;color:#0b57a3;}
+.delivered{background:#ececec;color:#333;}
+
+.action-btn{
+  padding:8px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+  margin-bottom:5px;
+  width:100%;
+}
+
+.green{background:#111;color:#fff;}
+.blue{background:#0d6efd;color:#fff;}
+.gray{background:#666;color:#fff;}
+
+.empty{
+  background:#fff;
+  padding:30px;
+  border-radius:12px;
+  text-align:center;
+  color:#666;
+  margin-top:15px;
+}
+
+@media(max-width:900px){
+  table,thead,tbody,tr,th,td{
+    display:block;
+    width:100%;
+  }
+
+  thead{
+    display:none;
+  }
+
+  tr{
+    background:#fff;
+    margin-bottom:15px;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 3px 10px rgba(0,0,0,.06);
+  }
+
+  td{
+    border-bottom:1px solid #eee;
+  }
+
+  td::before{
+    content:attr(data-label);
+    font-weight:bold;
+    display:block;
+    margin-bottom:5px;
+    color:#333;
+  }
+}
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+
+<body>
+
+<header>Admin Orders Dashboard</header>
+
+<div class="container">
+
+<div class="top-cards">
+  <div class="card">
+    <h3>Total Orders</h3>
+    <div class="num" id="totalOrders">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Paid Orders</h3>
+    <div class="num" id="paidOrders">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Shipped</h3>
+    <div class="num" id="shippedOrders">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Total Revenue</h3>
+    <div class="num" id="revenue">$0</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="Search customer or order number..." onkeyup="renderOrders()">
+
+  <select id="statusFilter" onchange="renderOrders()">
+    <option value="all">All Status</option>
+    <option value="Paid">Paid</option>
+    <option value="Shipped">Shipped</option>
+    <option value="Delivered">Delivered</option>
+  </select>
+</div>
+
+<div id="ordersArea"></div>
+
+</div>
+
+<script>
+let orders = JSON.parse(localStorage.getItem("allOrders")) || [];
+
+/* For testing if empty */
+if(orders.length === 0){
+  const latest = JSON.parse(localStorage.getItem("latestOrder"));
+  if(latest){
+    orders.push(latest);
+    localStorage.setItem("allOrders", JSON.stringify(orders));
+  }
+}
+
+function updateStats(filtered){
+
+  document.getElementById("totalOrders").textContent = filtered.length;
+
+  document.getElementById("paidOrders").textContent =
+    filtered.filter(o => o.paymentStatus === "Paid").length;
+
+  document.getElementById("shippedOrders").textContent =
+    filtered.filter(o => o.paymentStatus === "Shipped").length;
+
+  let total = 0;
+  filtered.forEach(o => total += Number(o.total || 0));
+
+  document.getElementById("revenue").textContent = "$" + total;
+}
+
+function badge(status){
+  if(status === "Paid") return "badge paid";
+  if(status === "Shipped") return "badge shipped";
+  if(status === "Delivered") return "badge delivered";
+  return "badge pending";
+}
+
+function renderOrders(){
+
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const filter = document.getElementById("statusFilter").value;
+
+  let filtered = orders.filter(order => {
+
+    const matchSearch =
+      (order.fullName || "").toLowerCase().includes(search) ||
+      (order.orderNumber || "").toLowerCase().includes(search);
+
+    const matchStatus =
+      filter === "all" || order.paymentStatus === filter;
+
+    return matchSearch && matchStatus;
+  });
+
+  updateStats(filtered);
+
+  if(filtered.length === 0){
+    document.getElementById("ordersArea").innerHTML =
+      `<div class="empty">No orders found.</div>`;
+    return;
+  }
+
+  let html = `
+  <table>
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>Customer</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Address</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+
+  filtered.forEach((order,index)=>{
+
+    html += `
+      <tr>
+        <td data-label="Order">
+          <strong>${order.orderNumber || "-"}</strong><br>
+          ${order.paidAt ? new Date(order.paidAt).toLocaleDateString() : ""}
+        </td>
+
+        <td data-label="Customer">
+          ${order.fullName || "-"}<br>
+          ${order.email || ""}
+        </td>
+
+        <td data-label="Amount">
+          $${order.total || 0}
+        </td>
+
+        <td data-label="Status">
+          <span class="${badge(order.paymentStatus)}">
+            ${order.paymentStatus || "Pending"}
+          </span>
+        </td>
+
+        <td data-label="Address">
+          ${order.address || "-"}
+        </td>
+
+        <td data-label="Actions">
+          <button class="action-btn blue"
+            onclick="setStatus('${order.orderNumber}','Shipped')">
+            Mark Shipped
+          </button>
+
+          <button class="action-btn green"
+            onclick="setStatus('${order.orderNumber}','Delivered')">
+            Mark Delivered
+          </button>
+
+          <button class="action-btn gray"
+            onclick="deleteOrder('${order.orderNumber}')">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table>`;
+
+  document.getElementById("ordersArea").innerHTML = html;
+}
+
+function setStatus(orderNumber,status){
+
+  orders = orders.map(order=>{
+    if(order.orderNumber === orderNumber){
+      order.paymentStatus = status;
+    }
+    return order;
+  });
+
+  localStorage.setItem("allOrders", JSON.stringify(orders));
+  renderOrders();
+}
+
+function deleteOrder(orderNumber){
+
+  if(!confirm("Delete this order?")) return;
+
+  orders = orders.filter(order => order.orderNumber !== orderNumber);
+
+  localStorage.setItem("allOrders", JSON.stringify(orders));
+  renderOrders();
+}
+
+renderOrders();
+</script>
+
+</body>
+</html>

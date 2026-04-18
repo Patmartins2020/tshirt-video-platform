@@ -1,149 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Product Details</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      margin: 0;
-      padding: 30px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Product Details</title>
 
-    .product-box {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f8f9fa;
+  margin: 0;
+  padding: 30px;
+}
 
-    img {
-      width: 100%;
-      max-height: 500px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
+.product-box {
+  max-width: 850px;
+  margin: auto;
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
 
-    h1 {
-      margin-top: 20px;
-      font-size: 32px;
-    }
+/* ✅ Center container */
+.mockup-wrapper {
+  position: relative;
+  width: 420px;
+  margin: 0 auto 20px;
+}
 
-    p {
-      color: #555;
-      font-size: 18px;
-    }
+/* Base mockup */
+#mockupImage {
+  width: 100%;
+  display: block;
+}
 
-    strong {
-      display: block;
-      margin-top: 15px;
-      font-size: 28px;
-    }
+/* ✅ PERFECT CENTERING */
+#designOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  pointer-events: none;
+}
 
-    .buy-btn {
-      margin-top: 20px;
-      width: 100%;
-      padding: 15px;
-      border: none;
-      background: black;
-      color: white;
-      font-size: 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-  </style>
+/* Typography */
+h1 { font-size: 32px; }
+p { color: #555; font-size: 18px; }
+
+.price {
+  font-size: 28px;
+  margin-top: 10px;
+}
+
+select, input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+.layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.preview {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.controls {
+  flex: 1;
+}
+
+.buy-btn { background: black; color: white; }
+.back-btn { background: #555; color: white; }
+
+</style>
+<link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
-  <div class="product-box" id="productBox">
-    <p>Loading product...</p>
-  </div>
 
-  <script>
-    const productBox = document.getElementById("productBox");
+<div class="product-box" id="productBox">
+  <p>Loading product...</p>
+</div>
 
-    function getImagePath(imageUrl) {
-      if (!imageUrl) {
-        return "http://localhost:5000/uploads/default-shirt.jpg";
-      }
-      return imageUrl.startsWith("http")
-        ? imageUrl
-        : `http://localhost:5000/uploads/${imageUrl}`;
-    }
+<script>
 
-    async function loadProduct() {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get("id");
+const productBox = document.getElementById("productBox");
 
-      if (!id) {
-        productBox.innerHTML = "<p>Product not found.</p>";
-        return;
-      }
+/* IMAGE PATH */
+function getImagePath(imageUrl) {
+  if (!imageUrl) return "";
+  return imageUrl.startsWith("http")
+    ? imageUrl
+    : `http://localhost:5000/uploads/${imageUrl}`;
+}
 
-      try {
-        const res = await fetch("http://localhost:5000/api/designs/all");
-        const data = await res.json();
+/* MOCKUP PATH */
+function getMockupPath(type) {
+  return `assets/mockups/${type}-white.png`;
+}
 
-        const product = data.designs.find(item => item.id == id);
+/* LOAD PRODUCT */
+async function loadProduct() {
 
-        if (!product) {
-          productBox.innerHTML = "<p>Product not found.</p>";
-          return;
-        }
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
 
-        productBox.innerHTML = `
-          <img src="${getImagePath(product.imageUrl)}" alt="${product.title}">
-          <h1>${product.title}</h1>
-          <p>${product.description || "No description"}</p>
-        <strong>$${product.price}</strong>
+  if (!id) return showNotFound();
 
-<label><strong>Select Size:</strong></label>
-<select id="sizeSelect" style="width:100%;padding:10px;margin:10px 0;">
-  <option value="S">Small</option>
-  <option value="M">Medium</option>
-  <option value="L">Large</option>
-  <option value="XL">XL</option>
-</select>
+  try {
 
-<label><strong>Select Color:</strong></label>
-<select id="colorSelect" style="width:100%;padding:10px;margin:10px 0;">
-  <option value="Black">Black</option>
-  <option value="White">White</option>
-  <option value="Blue">Blue</option>
-  <option value="Red">Red</option>
-</select>
+    const res = await fetch("http://localhost:5000/api/designs/all");
+    const data = await res.json();
 
-<label><strong>Quantity:</strong></label>
-<input 
-  type="number" 
-  id="qtyInput" 
-  value="1" 
-  min="1"
-  style="width:100%;padding:10px;margin:10px 0;"
-/>
+    const product = (data.designs || [])
+      .find(p => String(p.id) === String(id));
 
-<button class="buy-btn" onclick="goToCheckout(${product.id})">
-  Proceed to Checkout
-</button>
-        `;
-      } catch (error) {
-        productBox.innerHTML = "<p>Failed to load product.</p>";
-      }
-    }
+    if (!product) return showNotFound();
 
-    loadProduct();
+    productBox.innerHTML = `
+      <div class="mockup-wrapper">
+        <img id="mockupImage" src="${getMockupPath("tshirt")}">
+        <img id="designOverlay" src="${getImagePath(product.imageUrl)}">
+      </div>
 
-    function goToCheckout(productId) {
+      <h1>${product.title}</h1>
+      <p>${product.description || "No description"}</p>
+      <div class="price">$${product.price}</div>
+
+      <label>Product Type</label>
+      <select id="productType" onchange="updateMockup()">
+        <option value="tshirt">T-Shirt</option>
+        <option value="hoodie">Hoodie</option>
+        <option value="tote">Tote</option>
+        <option value="mug">Mug</option>
+        <option value="baby">Baby Wear</option>
+        <option value="women">Women Tee</option>
+      </select>
+
+      <label>Side</label>
+      <select id="sideSelect" onchange="updateMockup()">
+        <option value="front">Front</option>
+        <option value="back">Back</option>
+      </select>
+
+      <label>Size</label>
+      <select id="sizeSelect">
+        <option>S</option>
+        <option>M</option>
+        <option>L</option>
+        <option>XL</option>
+      </select>
+
+      <label>Color</label>
+      <select id="colorSelect">
+        <option>White</option>
+        <option>Black</option>
+        <option>Blue</option>
+        <option>Red</option>
+      </select>
+
+      <label>Quantity</label>
+      <input type="number" id="qtyInput" value="1" min="1">
+
+      <button class="buy-btn" onclick="goToCheckout(${product.id})">
+        Proceed to Checkout
+      </button>
+    `;
+
+    updateMockup();
+
+  } catch (err) {
+    console.error(err);
+    showNotFound();
+  }
+}
+
+/* FIXED UPDATE FUNCTION */
+function updateMockup() {
+
+  const type = document.getElementById("productType").value;
+  const side = document.getElementById("sideSelect").value;
+
+  const mockup = document.getElementById("mockupImage");
+  const overlay = document.getElementById("designOverlay");
+
+  mockup.src = getMockupPath(type);
+
+  const sizes = {
+    tshirt: "150px",
+    hoodie: "180px",
+    tote: "190px",
+    mug: "120px",
+    baby: "150px",
+    women: "160px"
+  };
+
+  overlay.style.width = sizes[type];
+
+  /* ✅ KEY FIX: KEEP CENTER + ADD FLIP */
+  if (side === "back") {
+    overlay.style.transform = "translate(-50%, -50%) scaleX(-1)";
+  } else {
+    overlay.style.transform = "translate(-50%, -50%) scaleX(1)";
+  }
+}
+
+/* CHECKOUT */
+function goToCheckout(id) {
+
   const size = document.getElementById("sizeSelect").value;
   const color = document.getElementById("colorSelect").value;
   const qty = document.getElementById("qtyInput").value;
+  const type = document.getElementById("productType").value;
 
   window.location.href =
-    `checkout.html?id=${productId}&size=${size}&color=${color}&qty=${qty}`;
+    `checkout.html?id=${id}&size=${size}&color=${color}&qty=${qty}&type=${type}`;
 }
-  </script>
+
+/* NOT FOUND */
+function showNotFound() {
+  productBox.innerHTML = `
+    <p>Product not found.</p>
+    <button class="back-btn" onclick="window.location='shop.html'">
+      Back to Shop
+    </button>
+  `;
+}
+
+loadProduct();
+
+</script>
+
 </body>
 </html>

@@ -1,145 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>T-Shirt Store</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background: #f8f9fa;
-      margin: 0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>T-Shirt Store</title>
 
-    h1 {
-      margin-bottom: 20px;
-      color: #222;
-    }
+<link rel="stylesheet" href="theme.css">
 
-    #storeGrid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
-    }
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-    .product-card {
-      background: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: transform 0.2s ease;
-    }
+body{
+  font-family:Arial, sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#111827,#1e3a8a,#0f172a);
+  background-attachment:fixed;
+  padding:35px 25px;
+}
 
-    .product-card:hover {
-      transform: translateY(-4px);
-    }
+/* HEADER */
+.store-header{
+  max-width:1300px;
+  margin:auto;
+  margin-bottom:35px;
+}
 
-    .product-card img {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      border-radius: 8px;
-      display: block;
-      background: #eee;
-    }
+.store-header h1{
+  color:#fff;
+  text-align:center;
+  font-size:42px;
+  margin-bottom:10px;
+}
 
-    .product-card h3 {
-      margin: 12px 0 6px;
-      font-size: 20px;
-    }
+.store-header p{
+  color:#d1d5db;
+  text-align:center;
+  font-size:16px;
+}
 
-    .product-card p {
-      color: #555;
-      font-size: 14px;
-      margin: 0;
-    }
+/* GRID */
+#storeGrid{
+  max-width:1300px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:25px;
+}
 
-    .product-card strong {
-      display: block;
-      margin-top: 12px;
-      font-size: 18px;
-      color: #111;
-    }
+/* CARD */
+.product-card{
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 12px 25px rgba(0,0,0,.18);
+  transition:0.25s ease;
+}
 
-    .buy-btn {
-      margin-top: 15px;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      background: black;
-      color: white;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 15px;
-    }
+.product-card:hover{
+  transform:translateY(-6px);
+}
 
-    .buy-btn:hover {
-      opacity: 0.9;
-    }
-  </style>
+/* MOCKUP AREA */
+.mockup-box{
+  position:relative;
+  width:100%;
+  height:340px;
+  background:#f3f4f6;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.mockup-base{
+  width:85%;
+  height:85%;
+  object-fit:contain;
+}
+
+.design-print{
+  position:absolute;
+  top:45%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:95px;
+  height:95px;
+  object-fit:contain;
+}
+
+/* CONTENT */
+.card-body{
+  padding:18px;
+}
+
+.card-body h3{
+  font-size:24px;
+  color:#111827;
+  margin-bottom:8px;
+}
+
+.card-body p{
+  color:#6b7280;
+  font-size:14px;
+  min-height:38px;
+}
+
+.card-body strong{
+  display:block;
+  margin-top:14px;
+  font-size:28px;
+  color:#2563eb;
+}
+
+/* BUTTON */
+.buy-btn{
+  width:100%;
+  margin-top:16px;
+  padding:13px;
+  border:none;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.buy-btn:hover{
+  background:#2563eb;
+}
+
+/* EMPTY */
+.empty-msg{
+  color:#fff;
+  text-align:center;
+  font-size:18px;
+  grid-column:1/-1;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+body{
+  padding:20px;
+}
+
+.store-header h1{
+  font-size:30px;
+}
+
+.mockup-box{
+  height:280px;
+}
+
+.design-print{
+  width:80px;
+  height:80px;
+}
+
+}
+</style>
 </head>
+
 <body>
+
+<div class="store-header">
   <h1>Our T-Shirt Store</h1>
-  <div id="storeGrid"></div>
+  <p>Premium designs ready for purchase</p>
+</div>
 
-  <script>
-  const storeGrid = document.getElementById("storeGrid");
+<div id="storeGrid"></div>
 
-  function getImagePath(imageUrl) {
-    if (!imageUrl || imageUrl.trim() === "") {
-      return "http://localhost:5000/uploads/default-shirt.jpg";
-    }
+<script>
+const storeGrid = document.getElementById("storeGrid");
 
-    if (imageUrl.startsWith("http")) {
-      return imageUrl;
-    }
+function getImagePath(imageUrl){
 
-    if (imageUrl.startsWith("uploads/")) {
-      return `http://localhost:5000/${imageUrl}`;
-    }
-
-    return `http://localhost:5000/uploads/${imageUrl}`;
+  if(!imageUrl || imageUrl.trim() === ""){
+    return "http://localhost:5000/uploads/default-shirt.jpg";
   }
 
-  async function loadProducts() {
-    try {
-      const response = await fetch("http://localhost:5000/api/designs/all");
-      const result = await response.json();
-
-      console.log("SHOP DATA:", result);
-
-      if (!result.success) {
-        storeGrid.innerHTML = "<p>Failed to load products.</p>";
-        return;
-      }
-
-      const products = result.designs;
-      storeGrid.innerHTML = "";
-
-      products.forEach((product) => {
-        const imagePath = getImagePath(product.imageUrl);
-
-        storeGrid.innerHTML += `
-          <div class="product-card">
-            <img src="${imagePath}" alt="${product.title}">
-            <h3>${product.title}</h3>
-            <p>${product.description || "No description"}</p>
-            <strong>$${product.price || 0}</strong>
-           <a href="product.html?id=${product.id}">
-  <button class="buy-btn">Buy Now</button>
-</a>
-          </div>
-        `;
-      });
-
-    } catch (error) {
-      console.error("SHOP ERROR:", error);
-      storeGrid.innerHTML = "<p>Failed to load products.</p>";
-    }
+  if(imageUrl.startsWith("http")){
+    return imageUrl;
   }
 
-  loadProducts();
+  if(imageUrl.startsWith("uploads/")){
+    return `http://localhost:5000/${imageUrl}`;
+  }
+
+  return `http://localhost:5000/uploads/${imageUrl}`;
+}
+
+async function loadProducts(){
+
+  try{
+
+    const response =
+      await fetch("http://localhost:5000/api/designs/all");
+
+    const result = await response.json();
+
+    console.log("SHOP DATA:", result);
+
+    if(!result.success){
+      storeGrid.innerHTML =
+      "<p class='empty-msg'>Failed to load products.</p>";
+      return;
+    }
+
+    const products = result.designs || [];
+
+    storeGrid.innerHTML = "";
+
+    if(products.length === 0){
+      storeGrid.innerHTML =
+      "<p class='empty-msg'>No products available yet.</p>";
+      return;
+    }
+
+    products.forEach(product => {
+
+      const imagePath =
+      getImagePath(product.imageUrl);
+
+      storeGrid.innerHTML += `
+      <div class="product-card">
+
+        <div class="mockup-box">
+
+          <img
+          class="mockup-base"
+          src="./assets/mockups/tshirt-white.png"
+          alt="T-Shirt Mockup">
+
+          <img
+          class="design-print"
+          src="${imagePath}"
+          alt="${product.title}">
+
+        </div>
+
+        <div class="card-body">
+
+          <h3>${product.title}</h3>
+
+          <p>
+          ${product.description || "No description"}
+          </p>
+
+          <strong>$${product.price || 0}</strong>
+
+          <a href="product.html?id=${product.id}">
+            <button class="buy-btn">
+              Buy Now
+            </button>
+          </a>
+
+        </div>
+
+      </div>
+      `;
+    });
+
+  }catch(error){
+
+    console.error("SHOP ERROR:", error);
+
+    storeGrid.innerHTML =
+    "<p class='empty-msg'>Failed to load products.</p>";
+  }
+}
+
+loadProducts();
 </script>
+
 </body>
 </html>

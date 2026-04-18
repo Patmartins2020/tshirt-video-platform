@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Create Promo Video</title>
+
+<link rel="stylesheet" href="theme.css">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#111827,#1e3a8a,#0f172a);
+  background-attachment:fixed;
+  padding:30px;
+  color:white;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap;
+  margin-bottom:25px;
+}
+
+.topbar h1{
+  font-size:32px;
+}
+
+.btn{
+  padding:12px 16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:bold;
+}
+
+.dark{ background:#111827; color:white; }
+.green{ background:#16a34a; color:white; }
+.gray{ background:#6b7280; color:white; }
+
+.layout{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:24px;
+}
+
+.panel{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:16px;
+  padding:20px;
+  backdrop-filter: blur(8px);
+}
+
+.panel h2{
+  font-size:22px;
+  margin-bottom:16px;
+}
+
+label{
+  display:block;
+  margin:14px 0 6px;
+  font-weight:bold;
+}
+
+input, select{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+}
+
+.preview-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+canvas{
+  width:100%;
+  max-width:720px;
+  background:#000;
+  border-radius:14px;
+  display:block;
+  margin:auto;
+}
+
+.info{
+  color:#d1d5db;
+  font-size:14px;
+  line-height:1.5;
+}
+
+.download-link{
+  display:none;
+  margin-top:14px;
+  text-decoration:none;
+}
+
+.download-link button{
+  width:100%;
+}
+
+@media(max-width:900px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <h1>Create Promo Video</h1>
+    <button class="btn gray" onclick="goBack()">Back</button>
+  </div>
+
+  <div class="layout">
+
+    <div class="panel">
+      <h2>Video Settings</h2>
+
+      <label>Product Title</label>
+      <input type="text" id="titleInput">
+
+      <label>Price</label>
+      <input type="text" id="priceInput">
+
+      <label>Promo Line</label>
+      <input type="text" id="taglineInput" value="Order now on TeePlatform">
+
+      <label>Theme</label>
+      <select id="themeSelect">
+        <option value="blue">Blue Premium</option>
+        <option value="dark">Dark Luxury</option>
+        <option value="green">Fresh Promo</option>
+      </select>
+
+      <label>Duration</label>
+      <select id="durationSelect">
+        <option value="6">6 seconds</option>
+        <option value="8" selected>8 seconds</option>
+        <option value="10">10 seconds</option>
+      </select>
+
+      <button class="btn dark" style="width:100%;margin-top:18px;" onclick="previewVideo()">
+        Preview Animation
+      </button>
+
+      <button class="btn green" style="width:100%;margin-top:12px;" onclick="recordVideo()">
+        Generate Downloadable Video
+      </button>
+
+      <a id="downloadLink" class="download-link">
+        <button type="button" class="btn green">Download Video</button>
+      </a>
+    </div>
+
+    <div class="panel preview-wrap">
+      <h2>Preview</h2>
+      <canvas id="promoCanvas" width="720" height="720"></canvas>
+      <div class="info">
+        This testing version creates a short promo video from your product image, title, and price.
+        It downloads as <strong>WebM</strong>. Later we can upgrade it to MP4 on the backend.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const productTitle = params.get("title") || "Product";
+const productImage = params.get("image") || "";
+const productPrice = params.get("price") || "0";
+
+document.getElementById("titleInput").value = productTitle;
+document.getElementById("priceInput").value = `$${productPrice}`;
+
+const canvas = document.getElementById("promoCanvas");
+const ctx = canvas.getContext("2d");
+
+const img = new Image();
+img.crossOrigin = "anonymous";
+img.src = productImage;
+
+function goBack(){
+  window.history.back();
+}
+
+function getThemeColors(theme){
+  if(theme === "dark"){
+    return {
+      bg1:"#0f172a",
+      bg2:"#111827",
+      text:"#ffffff",
+      accent:"#f59e0b"
+    };
+  }
+  if(theme === "green"){
+    return {
+      bg1:"#052e16",
+      bg2:"#166534",
+      text:"#ffffff",
+      accent:"#86efac"
+    };
+  }
+  return {
+    bg1:"#111827",
+    bg2:"#1e3a8a",
+    text:"#ffffff",
+    accent:"#60a5fa"
+  };
+}
+
+function drawFrame(progress){
+  const title = document.getElementById("titleInput").value || "Product";
+  const price = document.getElementById("priceInput").value || "$0";
+  const tagline = document.getElementById("taglineInput").value || "Order now";
+  const theme = document.getElementById("themeSelect").value;
+
+  const colors = getThemeColors(theme);
+
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, colors.bg1);
+  grad.addColorStop(1, colors.bg2);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const scale = 1 + 0.06 * Math.sin(progress * Math.PI * 2);
+  const imageSize = 260 * scale;
+  const imageX = canvas.width / 2 - imageSize / 2;
+  const imageY = 140;
+
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.35)";
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  roundRect(ctx, canvas.width/2 - 170, 95, 340, 340, 20, true, false);
+  ctx.restore();
+
+  if(img.complete){
+    ctx.drawImage(img, imageX, imageY, imageSize, imageSize);
+  }
+
+  ctx.fillStyle = colors.text;
+  ctx.textAlign = "center";
+
+  ctx.font = "bold 42px Arial";
+  ctx.fillText(title, canvas.width / 2, 520);
+
+  ctx.fillStyle = colors.accent;
+  ctx.font = "bold 48px Arial";
+  ctx.fillText(price, canvas.width / 2, 590);
+
+  ctx.fillStyle = colors.text;
+  ctx.font = "28px Arial";
+  ctx.fillText(tagline, canvas.width / 2, 655);
+
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.font = "bold 24px Arial";
+  ctx.fillText("TEEPLATFORM", canvas.width / 2, 70);
+}
+
+function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+  if (typeof radius === "number") {
+    radius = {tl: radius, tr: radius, br: radius, bl: radius};
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + radius.tl, y);
+  ctx.lineTo(x + width - radius.tr, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+  ctx.lineTo(x + width, y + height - radius.br);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+  ctx.lineTo(x + radius.bl, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+  ctx.lineTo(x, y + radius.tl);
+  ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+function previewVideo(){
+  let start = null;
+
+  function animate(ts){
+    if(!start) start = ts;
+    const elapsed = ts - start;
+    const progress = (elapsed % 3000) / 3000;
+    drawFrame(progress);
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+async function recordVideo(){
+  const seconds = Number(document.getElementById("durationSelect").value);
+  const stream = canvas.captureStream(30);
+  const recorder = new MediaRecorder(stream, {
+    mimeType: "video/webm"
+  });
+
+  const chunks = [];
+
+  recorder.ondataavailable = e => {
+    if(e.data.size > 0){
+      chunks.push(e.data);
+    }
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.getElementById("downloadLink");
+    link.href = url;
+    link.download = "promo-video.webm";
+    link.style.display = "block";
+  };
+
+  recorder.start();
+
+  const startTime = performance.now();
+
+  function render(ts){
+    const elapsed = (ts - startTime) / 1000;
+    const progress = (elapsed % 3) / 3;
+    drawFrame(progress);
+
+    if(elapsed < seconds){
+      requestAnimationFrame(render);
+    } else {
+      recorder.stop();
+    }
+  }
+
+  requestAnimationFrame(render);
+}
+
+img.onload = () => {
+  drawFrame(0.1);
+};
+</script>
+
+</body>
+</html>

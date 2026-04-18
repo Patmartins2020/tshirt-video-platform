@@ -1,58 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Payment</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test Payment</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
+      background: #f6f7fb;
+      margin: 0;
       padding: 30px;
-      background: #f8f9fa;
     }
+
     .box {
-      max-width: 500px;
+      max-width: 650px;
       margin: auto;
       background: white;
       padding: 25px;
-      border-radius: 10px;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
-    button {
+
+    h1 {
+      margin-top: 0;
+      font-size: 34px;
+      color: #111;
+    }
+
+    h3 {
+      margin-top: 25px;
+      color: #222;
+    }
+
+    p {
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .summary {
+      background: #f8f9fc;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #222;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .pay-btn, .back-btn {
       width: 100%;
       padding: 14px;
       border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+
+    .pay-btn {
       background: black;
       color: white;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
+    }
+
+    .back-btn {
+      background: #ddd;
+      color: #111;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #4f46e5;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .processing {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #4b5563;
+    }
+
+    @media (max-width: 640px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 15px;
+      }
     }
   </style>
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
-  <div class="box" id="paymentBox"></div>
+  <div class="box" id="paymentBox">
+    <p>Loading payment details...</p>
+  </div>
 
   <script>
-    const customer = JSON.parse(localStorage.getItem("checkoutCustomer"));
+    function generateOrderNumber() {
+      return "TS" + Math.floor(100000 + Math.random() * 900000);
+    }
 
-    if (!customer) {
-      document.getElementById("paymentBox").innerHTML =
-        "<p>No checkout data found.</p>";
-    } else {
+    function getStoredCheckoutData() {
+      const raw = localStorage.getItem("checkoutCustomer");
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function loadPaymentPage() {
+      const data = getStoredCheckoutData();
+
+      if (!data) {
+        document.getElementById("paymentBox").innerHTML = `
+          <h1>Payment</h1>
+          <p>No checkout data found.</p>
+          <button class="back-btn" onclick="window.location.href='shop.html'">Back to Shop</button>
+        `;
+        return;
+      }
+
       document.getElementById("paymentBox").innerHTML = `
+        <div class="badge">Test Payment Mode</div>
         <h1>Payment Summary</h1>
-        <p><strong>Name:</strong> ${customer.fullName}</p>
-        <p><strong>Email:</strong> ${customer.email}</p>
-        <p><strong>Phone:</strong> ${customer.phone}</p>
-        <p><strong>Address:</strong> ${customer.address}</p>
-        <h2>Total: $${customer.total}</h2>
-        <button onclick="payNow()">Pay Now</button>
+
+        <div class="summary">
+          <p><strong>Name:</strong> ${data.fullName}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Phone:</strong> ${data.phone}</p>
+          <p><strong>Address:</strong> ${data.address}</p>
+          <p><strong>Total:</strong> $${data.total}</p>
+        </div>
+
+        <h3>Choose Payment Method</h3>
+        <div class="row">
+          <label for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod">
+            <option value="card">Card Payment</option>
+            <option value="paypal">PayPal</option>
+            <option value="applepay">Apple Pay</option>
+            <option value="bank">Bank Transfer</option>
+          </select>
+        </div>
+
+        <h3>Test Card Details</h3>
+        <div class="row">
+          <label for="cardName">Cardholder Name</label>
+          <input id="cardName" type="text" placeholder="Nick Nick" />
+        </div>
+
+        <div class="row">
+          <label for="cardNumber">Card Number</label>
+          <input id="cardNumber" type="text" placeholder="4242 4242 4242 4242" maxlength="19" />
+        </div>
+
+        <div class="two-col">
+          <div class="row">
+            <label for="expiry">Expiry</label>
+            <input id="expiry" type="text" placeholder="12/28" maxlength="5" />
+          </div>
+
+          <div class="row">
+            <label for="cvv">CVV</label>
+            <input id="cvv" type="password" placeholder="123" maxlength="4" />
+          </div>
+        </div>
+
+        <button class="pay-btn" onclick="processTestPayment()">Pay Test Order</button>
+        <button class="back-btn" onclick="window.history.back()">Back</button>
+
+        <div class="processing" id="processingText">Processing payment...</div>
       `;
     }
 
-    function payNow() {
-      alert("Payment gateway integration comes next 🔥");
+    function processTestPayment() {
+      const checkoutData = getStoredCheckoutData();
+
+      if (!checkoutData) {
+        alert("Checkout data is missing.");
+        return;
+      }
+
+      const paymentMethod = document.getElementById("paymentMethod").value;
+      const cardName = document.getElementById("cardName").value.trim();
+      const cardNumber = document.getElementById("cardNumber").value.trim();
+      const expiry = document.getElementById("expiry").value.trim();
+      const cvv = document.getElementById("cvv").value.trim();
+
+      if (!paymentMethod) {
+        alert("Please choose a payment method.");
+        return;
+      }
+
+      if (!cardName || !cardNumber || !expiry || !cvv) {
+        alert("Please fill all test payment fields.");
+        return;
+      }
+
+      const processingText = document.getElementById("processingText");
+      processingText.style.display = "block";
+
+      const orderNumber = generateOrderNumber();
+
+      const fakeOrder = {
+        ...checkoutData,
+        paymentMethod,
+        orderNumber,
+        paymentStatus: "Paid",
+        paidAt: new Date().toISOString()
+      };
+
+      localStorage.setItem("latestOrder", JSON.stringify(fakeOrder));
+
+      setTimeout(() => {
+        window.location.href = "success.html";
+      }, 1800);
     }
+
+    loadPaymentPage();
   </script>
 </body>
 </html>
