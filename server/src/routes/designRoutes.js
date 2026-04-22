@@ -12,16 +12,12 @@ const {
 
 console.log("✅ designRoutes loaded");
 
-/* =================================
-   PATHS
-================================= */
+/* PATHS */
 const uploadsDir = path.join(__dirname, "../uploads");
 const dataDir = path.join(__dirname, "../data");
 const designsFile = path.join(dataDir, "designs.json");
 
-/* =================================
-   CREATE FOLDERS / FILES
-================================= */
+/* CREATE FOLDERS */
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -34,42 +30,31 @@ if (!fs.existsSync(designsFile)) {
   fs.writeFileSync(designsFile, "[]");
 }
 
-/* =================================
-   HELPERS
-================================= */
+/* HELPERS */
 function readDesigns() {
   return JSON.parse(fs.readFileSync(designsFile, "utf8"));
 }
 
 function saveDesigns(data) {
-  fs.writeFileSync(
-    designsFile,
-    JSON.stringify(data, null, 2)
-  );
+  fs.writeFileSync(designsFile, JSON.stringify(data, null, 2));
 }
 
-/* =================================
-   MULTER
-================================= */
+/* MULTER */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
+  destination: (req, file, cb) => cb(null, uploadsDir),
 
   filename: (req, file, cb) => {
-    const fileName =
-      Date.now() + "-" +
-      file.originalname.replace(/\s+/g, "-");
+  const cleanName = file.originalname
+    .replace(/\s+/g, "-")
+    .toLowerCase();
 
-    cb(null, fileName);
-  }
+  cb(null, Date.now() + "-" + cleanName);
+}
 });
 
 const upload = multer({ storage });
 
-/* =================================
-   TEST ROUTE
-================================= */
+/* TEST */
 router.get("/all-test", (req, res) => {
   res.json({
     success: true,
@@ -77,32 +62,14 @@ router.get("/all-test", (req, res) => {
   });
 });
 
-/* =================================
-   MAIN ROUTES
-================================= */
+/* ROUTES */
+router.post("/upload", upload.single("image"), uploadDesign);
 
-/* Upload product */
-router.post(
-  "/upload",
-  upload.single("image"),
-  uploadDesign
-);
+router.get("/my-designs/:userId", getMyDesigns);
 
-/* Seller products */
-router.get(
-  "/my-designs/:userId",
-  getMyDesigns
-);
+router.get("/all", getAllDesigns);
 
-/* All products */
-router.get(
-  "/all",
-  getAllDesigns
-);
-
-/* =================================
-   DELETE PRODUCT
-================================= */
+/* DELETE */
 router.delete("/delete/:id", (req, res) => {
   try {
     const id = req.params.id;
@@ -120,14 +87,9 @@ router.delete("/delete/:id", (req, res) => {
       });
     }
 
-    /* delete image file */
     if (product.imageUrl) {
-
-      const cleanName =
-        product.imageUrl.replace("uploads/", "");
-
-      const imagePath =
-        path.join(uploadsDir, cleanName);
+      const cleanName = product.imageUrl.replace("uploads/", "");
+      const imagePath = path.join(uploadsDir, cleanName);
 
       if (fs.existsSync(imagePath)) {
         fs.unlinkSync(imagePath);
@@ -140,68 +102,20 @@ router.delete("/delete/:id", (req, res) => {
 
     saveDesigns(designs);
 
-    return res.json({
+    res.json({
       success: true,
       message: "Product deleted"
     });
 
   } catch (error) {
+    console.log(error);
 
-    console.log("DELETE ERROR:", error);
-
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Server error"
     });
   }
 });
 
-/* =================================
-   LIVE ON / OFF
-================================= */
-router.put("/live/:id", (req, res) => {
-  try {
-
-    const id = req.params.id;
-    const { isLive } = req.body;
-
-    let designs = readDesigns();
-
-    const index = designs.findIndex(
-      item => String(item.id) === String(id)
-    );
-
-    if (index === -1) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found"
-      });
-    }
-
-    designs[index].isLive = isLive;
-
-    saveDesigns(designs);
-
-    return res.json({
-      success: true,
-      message: isLive
-        ? "Product is now live"
-        : "Product hidden",
-      isLive
-    });
-
-  } catch (error) {
-
-    console.log("LIVE ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
-  }
-});
-
-/* =================================
-   EXPORT
-================================= */
+/* EXPORT */
 module.exports = router;

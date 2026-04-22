@@ -175,19 +175,23 @@ body{
 }
 
 .mockup-base{
-  width:100%;
-  height:100%;
-  object-fit:contain;
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ position:relative;
+ z-index:1;
 }
-
 .design-print{
   position:absolute;
-  top:36%;
+  top:45%;
   left:50%;
   transform:translate(-50%,-50%);
-  width:95px;
-  height:95px;
+  width:160px;
+  height:160px;
   object-fit:contain;
+  z-index:5;
+  opacity:1;
+  mix-blend-mode:multiply;
 }
 
 /* CONTENT */
@@ -330,191 +334,198 @@ body{
 </div>
 
 <script>
-const user = JSON.parse(localStorage.getItem("user"));
 const token = localStorage.getItem("token");
+
+const user = JSON.parse(localStorage.getItem("user")) || {
+  id: 1,
+  fullName: localStorage.getItem("userEmail") || "User",
+  email: localStorage.getItem("userEmail") || ""
+};
+
 const designList = document.getElementById("designList");
 
-if(!token || !user){
+/* LOGIN CHECK */
+if (!token) {
   alert("Please login first");
   window.location.href = "login.html";
 }
 
-const userName = user.fullName || user.name || "User";
+/* USER NAME */
+const userName = user.fullName || user.name || user.email || "User";
 
 document.getElementById("welcomeText").innerText =
-"Welcome, " + userName;
+  "Welcome, " + userName;
 
 document.getElementById("sidebarUser").innerText =
-userName;
+  userName;
 
 /* COUNTS */
-function loadCounts(){
+function loadCounts() {
+  const allOrders =
+    JSON.parse(localStorage.getItem("allOrders")) || [];
 
-const allOrders =
-JSON.parse(localStorage.getItem("allOrders")) || [];
+  const userOrders =
+    allOrders.filter(order => order.email === user.email);
 
-const userOrders =
-allOrders.filter(order => order.email === user.email);
+  document.getElementById("orderCount").innerText =
+    userOrders.length;
 
-document.getElementById("orderCount").innerText =
-userOrders.length;
+  const cart =
+    JSON.parse(localStorage.getItem("cart")) || [];
 
-const cart =
-JSON.parse(localStorage.getItem("cart")) || [];
-
-document.getElementById("cartCount").innerText =
-cart.length;
+  document.getElementById("cartCount").innerText =
+    cart.length;
 }
 
 /* IMAGE PATH */
 function getImagePath(imageUrl){
+  if (!imageUrl || imageUrl.trim() === "") {
+    return "";
+  }
 
-if(!imageUrl || imageUrl.trim() === ""){
-return "http://localhost:5000/uploads/shirts.jpg";
+  if (imageUrl.startsWith("http")) {
+    return imageUrl;
+  }
+
+ return `http://localhost:5000/uploads/${encodeURIComponent(imageUrl)}`;
 }
-
-if(imageUrl.startsWith("uploads/")){
-return `http://localhost:5000/${imageUrl}`;
-}
-
-return `http://localhost:5000/uploads/${imageUrl}`;
-}
-
 /* LOAD PRODUCTS */
-async function loadDesigns(){
+async function loadDesigns() {
 
-try{
+  try {
 
-const res = await fetch(
-`http://localhost:5000/api/designs/my-designs/${user.id}`
-);
+    const res = await fetch(
+      `http://localhost:5000/api/designs/my-designs/${user.id}`
+    );
 
-const result = await res.json();
+    if (!res.ok) {
+      designList.innerHTML =
+        "<p class='empty'>Server route not found.</p>";
+      return;
+    }
 
-if(!result.success){
-designList.innerHTML =
-"<p class='empty'>Failed to load products.</p>";
-return;
-}
+    const result = await res.json();
 
-const designs = result.designs || [];
+    if (!result.success) {
+      designList.innerHTML =
+        "<p class='empty'>Failed to load products.</p>";
+      return;
+    }
 
-document.getElementById("designCount").innerText =
-designs.length;
+    const designs = result.designs || [];
 
-if(designs.length === 0){
-designList.innerHTML =
-"<p class='empty'>No products uploaded yet.</p>";
-return;
-}
+    document.getElementById("designCount").innerText =
+      designs.length;
 
-let cards = "";
+    if (designs.length === 0) {
+      designList.innerHTML =
+        "<p class='empty'>No products uploaded yet.</p>";
+      return;
+    }
 
-designs.forEach(design=>{
+    let cards = "";
 
-cards += `
-<div class="design-card">
+    designs.forEach(design => {
 
-<div class="mockup-box">
+      cards += `
+      <div class="design-card">
+
+       <div class="mockup-box">
 
 <img class="mockup-base"
-src="./assets/mockups/tshirt-white.png">
-
-<img class="design-print"
 src="${getImagePath(design.imageUrl)}"
-onerror="this.src='http://localhost:5000/uploads/shirts.jpg'">
+style="object-fit:cover;">
 
 </div>
 
-<h3>${design.title}</h3>
+        <h3>${design.title}</h3>
 
-<p>${design.description || "No description"}</p>
+        <p>${design.description || "No description"}</p>
 
-<strong>$${design.price || 0}</strong>
+        <strong>$${design.price || 0}</strong>
 
-<div class="card-actions">
+        <div class="card-actions">
 
-<button class="view-btn"
-onclick="viewProduct(${design.id})">
-View
-</button>
+          <button class="view-btn"
+          onclick="viewProduct(${design.id})">
+          View
+          </button>
 
-<button class="publish-btn"
-onclick="publishSoon()">
-Publish
-</button>
+          <button class="publish-btn"
+          onclick="publishSoon()">
+          Publish
+          </button>
 
-<button class="del-btn"
-onclick="deleteProduct(${design.id})">
-Delete
-</button>
+          <button class="del-btn"
+          onclick="deleteProduct(${design.id})">
+          Delete
+          </button>
 
-<button class="promote-btn"
-onclick="createPromoVideo(
-  ${design.id},
-  '${String(design.title).replace(/'/g, "\\'")}',
-  '${String(getImagePath(design.imageUrl)).replace(/'/g, "\\'")}',
-  '${design.price || 0}'
-)">
-Create Video
-</button>
-</div>
+          <button class="promote-btn"
+          onclick="createPromoVideo(
+            ${design.id},
+            '${String(design.title).replace(/'/g, "\\'")}',
+            '${String(getImagePath(design.imageUrl)).replace(/'/g, "\\'")}',
+            '${design.price || 0}'
+          )">
+          Create Video
+          </button>
 
-</div>
-`;
-});
+        </div>
 
-designList.innerHTML = cards;
+      </div>
+      `;
+    });
 
-}catch(error){
+    designList.innerHTML = cards;
 
-console.log(error);
+  } catch (error) {
 
-designList.innerHTML =
-"<p class='empty'>Failed to load products.</p>";
-}
+    console.log("LOAD ERROR:", error);
+
+    designList.innerHTML =
+      "<p class='empty'>Could not connect to server.</p>";
+  }
 }
 
 /* DELETE */
-async function deleteProduct(id){
+async function deleteProduct(id) {
 
-const ask =
-confirm("Delete this product permanently?");
+  const ask =
+    confirm("Delete this product permanently?");
 
-if(!ask) return;
+  if (!ask) return;
 
-try{
+  try {
 
-const res = await fetch(
-`http://localhost:5000/api/designs/delete/${id}`,
-{
-method:"DELETE"
-});
+    const res = await fetch(
+      `http://localhost:5000/api/designs/delete/${id}`,
+      {
+        method: "DELETE"
+      }
+    );
 
-const data = await res.json();
+    const data = await res.json();
 
-if(data.success){
-alert("Product deleted successfully");
-loadDesigns();
-}else{
-alert(data.message || "Delete failed");
+    if (data.success) {
+      alert("Product deleted successfully");
+      loadDesigns();
+    } else {
+      alert(data.message || "Delete failed");
+    }
+
+  } catch (error) {
+    alert("Server error");
+  }
 }
 
-}catch(error){
-alert("Server error");
-}
-}
-
-/* PLACEHOLDERS */
-function publishSoon(){
-alert("Publishing system coming next.");
+/* OTHER FUNCTIONS */
+function publishSoon() {
+  alert("Publishing system coming next.");
 }
 
-function promoteSoon(){
-alert("Promotion feature coming soon.");
-}
+function createPromoVideo(id, title, imageUrl, price) {
 
-function createPromoVideo(id, title, imageUrl, price){
   const url =
     `create-video.html?id=${id}` +
     `&title=${encodeURIComponent(title)}` +
@@ -524,28 +535,26 @@ function createPromoVideo(id, title, imageUrl, price){
   window.location.href = url;
 }
 
-/* MENU */
-function viewProduct(id){
-window.location.href =
-`product.html?id=${id}`;
+function viewProduct(id) {
+  window.location.href =
+    `product.html?id=${id}`;
 }
 
-function goPage(page){
-window.location.href = page;
+function goPage(page) {
+  window.location.href = page;
 }
 
-function logout(){
+function logout() {
 
-localStorage.removeItem("token");
-localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
 
-window.location.href = "login.html";
+  window.location.href = "login.html";
 }
 
 /* INIT */
 loadCounts();
 loadDesigns();
-
 </script>
 
 </body>

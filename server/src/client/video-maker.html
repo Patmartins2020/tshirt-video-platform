@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeePlatform Video Maker V3</title>
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:Arial, sans-serif;
+      min-height:100vh;
+      background:linear-gradient(135deg,#111827,#1e3a8a,#0f172a);
+      background-attachment:fixed;
+      color:#fff;
+      padding:24px;
+    }
+
+    .page{
+      max-width:1450px;
+      margin:0 auto;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:24px;
+    }
+
+    .topbar h1{
+      font-size:34px;
+    }
+
+    .topbar p{
+      color:#cbd5e1;
+      margin-top:6px;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:12px 18px;
+      font-size:15px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+
+    .btn-dark{ background:#0f172a; color:#fff; }
+    .btn-green{ background:#16a34a; color:#fff; }
+    .btn-purple{ background:#7c3aed; color:#fff; }
+    .btn-gray{ background:#334155; color:#fff; }
+
+    .layout{
+      display:grid;
+      grid-template-columns:390px 1fr;
+      gap:22px;
+    }
+
+    .panel{
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:20px;
+      padding:22px;
+      backdrop-filter:blur(8px);
+      box-shadow:0 10px 30px rgba(0,0,0,0.18);
+    }
+
+    .panel h2{
+      font-size:24px;
+      margin-bottom:18px;
+    }
+
+    .field{
+      margin-bottom:16px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:8px;
+      font-size:14px;
+      font-weight:bold;
+      color:#e5e7eb;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      border:none;
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:15px;
+      outline:none;
+    }
+
+    .field textarea{
+      resize:vertical;
+      min-height:90px;
+    }
+
+    .button-stack{
+      display:grid;
+      gap:12px;
+      margin-top:8px;
+    }
+
+    .hint{
+      margin-top:16px;
+      font-size:13px;
+      color:#cbd5e1;
+      line-height:1.55;
+    }
+
+    .preview-panel{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .preview-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .badge-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      background:rgba(255,255,255,0.12);
+      border:1px solid rgba(255,255,255,0.16);
+      color:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+    }
+
+    .canvas-wrap{
+      display:flex;
+      justify-content:center;
+    }
+
+    canvas{
+      width:100%;
+      max-width:820px;
+      background:#000;
+      border-radius:22px;
+      display:block;
+      box-shadow:0 18px 40px rgba(0,0,0,0.28);
+    }
+
+    .download-wrap{
+      display:none;
+    }
+
+    .download-wrap .btn{
+      width:100%;
+    }
+
+    .share-box{
+      margin-top:8px;
+    }
+
+    .share-box textarea{
+      width:100%;
+      border:none;
+      border-radius:12px;
+      padding:14px;
+      font-size:14px;
+      min-height:90px;
+    }
+
+    audio{
+      width:100%;
+      margin-top:8px;
+    }
+
+    @media(max-width:980px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:640px){
+      body{
+        padding:14px;
+      }
+
+      .topbar h1{
+        font-size:28px;
+      }
+
+      .panel{
+        padding:16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div>
+        <h1>Video Maker Studio V3</h1>
+        <p>Create luxury or viral product ads with template choice, captions, and music.</p>
+      </div>
+      <button class="btn btn-gray" onclick="goBack()">Back</button>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <h2>Video Settings</h2>
+
+        <div class="field">
+          <label for="titleInput">Product Title</label>
+          <input type="text" id="titleInput" placeholder="Victory Tee" />
+        </div>
+
+        <div class="field">
+          <label for="priceInput">Price</label>
+          <input type="text" id="priceInput" placeholder="$25" />
+        </div>
+
+        <div class="field">
+          <label for="taglineInput">Promo Line</label>
+          <input type="text" id="taglineInput" placeholder="Order now on TeePlatform" />
+        </div>
+
+        <div class="field">
+          <label for="ctaInput">Call To Action</label>
+          <input type="text" id="ctaInput" placeholder="Shop Now" />
+        </div>
+
+        <div class="field">
+          <label for="captionsInput">Auto Captions / Selling Points</label>
+          <textarea id="captionsInput" placeholder="Soft cotton • Fast delivery • Limited stock"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="modeSelect">Mode</label>
+          <select id="modeSelect">
+            <option value="luxury">Luxury Premium</option>
+            <option value="viral">Viral Social</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="templateSelect">Template</label>
+          <select id="templateSelect">
+            <option value="luxury-gold">Luxury Gold</option>
+            <option value="luxury-minimal">Luxury Minimal</option>
+            <option value="luxury-clean">Luxury Clean</option>
+            <option value="viral-neon">Viral Neon</option>
+            <option value="viral-sale">Viral Sale Blast</option>
+            <option value="viral-street">Viral Street Pop</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="formatSelect">Format</label>
+          <select id="formatSelect" onchange="applyCanvasFormat()">
+            <option value="story">Reel / Story (9:16)</option>
+            <option value="square">Square Post (1:1)</option>
+            <option value="wide">Wide Banner (16:9)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="durationSelect">Duration</label>
+          <select id="durationSelect">
+            <option value="6">6 seconds</option>
+            <option value="8" selected>8 seconds</option>
+            <option value="10">10 seconds</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="audioInput">Background Music</label>
+          <input type="file" id="audioInput" accept="audio/*" />
+          <audio id="audioPreview" controls></audio>
+        </div>
+
+        <div class="button-stack">
+          <button class="btn btn-dark" onclick="startPreview()">Preview Animation</button>
+          <button class="btn btn-green" onclick="generateVideo()">Generate Downloadable Video</button>
+        </div>
+
+        <div class="download-wrap" id="downloadWrap">
+          <a id="downloadLink">
+            <button type="button" class="btn btn-purple">Download Video</button>
+          </a>
+        </div>
+
+        <div class="hint">
+          Version 3 adds multiple templates, captions, music, and format switching.
+          Export remains <strong>WebM</strong> in-browser. MP4 can be added later using backend rendering.
+        </div>
+      </div>
+
+      <div class="panel preview-panel">
+        <div class="preview-top">
+          <h2>Live Preview</h2>
+          <div class="badge-row">
+            <div class="badge" id="formatBadge">9:16 Vertical</div>
+            <div class="badge">Seller Promo Studio</div>
+          </div>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="videoCanvas" width="720" height="1280"></canvas>
+        </div>
+
+        <div class="share-box">
+          <textarea id="shareText" readonly></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const productTitle = params.get("title") || "Product";
+    const productPrice = params.get("price") || "0";
+    const productImage = params.get("image") || "";
+
+    const titleInput = document.getElementById("titleInput");
+    const priceInput = document.getElementById("priceInput");
+    const taglineInput = document.getElementById("taglineInput");
+    const ctaInput = document.getElementById("ctaInput");
+    const captionsInput = document.getElementById("captionsInput");
+    const modeSelect = document.getElementById("modeSelect");
+    const templateSelect = document.getElementById("templateSelect");
+    const formatSelect = document.getElementById("formatSelect");
+    const durationSelect = document.getElementById("durationSelect");
+    const audioInput = document.getElementById("audioInput");
+    const audioPreview = document.getElementById("audioPreview");
+    const canvas = document.getElementById("videoCanvas");
+    const ctx = canvas.getContext("2d");
+    const downloadWrap = document.getElementById("downloadWrap");
+    const downloadLink = document.getElementById("downloadLink");
+    const shareText = document.getElementById("shareText");
+    const formatBadge = document.getElementById("formatBadge");
+
+    titleInput.value = productTitle;
+    priceInput.value = `$${productPrice}`;
+    taglineInput.value = "Order now on TeePlatform";
+    ctaInput.value = "Shop Now";
+    captionsInput.value = "Premium quality • Fast delivery • Limited stock";
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = productImage;
+
+    let previewRunning = false;
+    let previewStart = null;
+    let audioUrl = null;
+
+    function goBack(){
+      window.history.back();
+    }
+
+    function updateShareText(){
+      shareText.value =
+`${titleInput.value || "Product"} ${priceInput.value || "$0"}
+${taglineInput.value || ""}
+${captionsInput.value || ""}
+${ctaInput.value || "Shop Now"} on TeePlatform`;
+    }
+
+    function applyCanvasFormat(){
+      const format = formatSelect.value;
+
+      if(format === "square"){
+        canvas.width = 1080;
+        canvas.height = 1080;
+        formatBadge.textContent = "1:1 Square";
+      } else if(format === "wide"){
+        canvas.width = 1280;
+        canvas.height = 720;
+        formatBadge.textContent = "16:9 Wide";
+      } else {
+        canvas.width = 720;
+        canvas.height = 1280;
+        formatBadge.textContent = "9:16 Vertical";
+      }
+
+      drawFrame(0.2);
+    }
+
+    function drawRoundedRect(x, y, w, h, r, fillStyle){
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fillStyle = fillStyle;
+      ctx.fill();
+    }
+
+    function getValues(){
+      return {
+        title: titleInput.value.trim() || "Product",
+        price: priceInput.value.trim() || "$0",
+        tagline: taglineInput.value.trim() || "Order now on TeePlatform",
+        cta: ctaInput.value.trim() || "Shop Now",
+        captions: captionsInput.value.trim() || "",
+        mode: modeSelect.value,
+        template: templateSelect.value
+      };
+    }
+
+    function getLayout(){
+      const w = canvas.width;
+      const h = canvas.height;
+      const format = formatSelect.value;
+
+      if(format === "wide"){
+        return {
+          titleY: 420,
+          priceY: 490,
+          taglineY: 560,
+          ctaY: 635,
+          imageBoxX: w / 2 - 180,
+          imageBoxY: 90,
+          imageBoxW: 360,
+          imageBoxH: 250
+        };
+      }
+
+      if(format === "square"){
+        return {
+          titleY: 650,
+          priceY: 730,
+          taglineY: 810,
+          ctaY: 920,
+          imageBoxX: w / 2 - 220,
+          imageBoxY: 120,
+          imageBoxW: 440,
+          imageBoxH: 400
+        };
+      }
+
+      return {
+        titleY: 760,
+        priceY: 850,
+        taglineY: 930,
+        ctaY: 1045,
+        imageBoxX: w / 2 - 240,
+        imageBoxY: 170,
+        imageBoxW: 480,
+        imageBoxH: 480
+      };
+    }
+
+    function drawProductImage(progress){
+      const layout = getLayout();
+      const floatY = Math.sin(progress * Math.PI * 2) * 10;
+      const pulse = 1 + Math.sin(progress * Math.PI * 4) * 0.04;
+
+      drawRoundedRect(
+        layout.imageBoxX,
+        layout.imageBoxY + floatY,
+        layout.imageBoxW,
+        layout.imageBoxH,
+        28,
+        "rgba(255,255,255,0.09)"
+      );
+
+      if(img.complete && img.naturalWidth > 0){
+        const baseSize = Math.min(layout.imageBoxW, layout.imageBoxH) * 0.62;
+        const size = baseSize * pulse;
+
+        ctx.save();
+        ctx.translate(canvas.width / 2, layout.imageBoxY + layout.imageBoxH / 2 + floatY + 10);
+        ctx.rotate(Math.sin(progress * Math.PI * 2) * 0.03);
+        ctx.shadowColor = "rgba(0,0,0,0.25)";
+        ctx.shadowBlur = 20;
+        ctx.drawImage(img, -size / 2, -size / 2, size, size);
+        ctx.restore();
+      }
+    }
+
+    function drawCaptions(captions, y, color){
+      if(!captions) return;
+      ctx.fillStyle = color;
+      ctx.font = "24px Arial";
+      ctx.textAlign = "center";
+
+      const lines = captions.split("•").map(x => x.trim()).filter(Boolean);
+      let currentY = y;
+      lines.forEach(line => {
+        ctx.fillText("• " + line, canvas.width / 2, currentY);
+        currentY += 34;
+      });
+    }
+
+    function drawLuxuryTemplate(progress, template){
+      const { title, price, tagline, cta, captions } = getValues();
+      const layout = getLayout();
+
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+      if(template === "luxury-gold"){
+        grad.addColorStop(0, "#050816");
+        grad.addColorStop(0.55, "#111827");
+        grad.addColorStop(1, "#3f2b07");
+      } else if(template === "luxury-minimal"){
+        grad.addColorStop(0, "#0b1120");
+        grad.addColorStop(1, "#1f2937");
+      } else {
+        grad.addColorStop(0, "#0f172a");
+        grad.addColorStop(1, "#1e3a8a");
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawRoundedRect(40, 40, canvas.width - 80, canvas.height - 80, 34, "rgba(255,255,255,0.04)");
+
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      ctx.font = "bold 26px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("TEEPLATFORM", canvas.width / 2, 80);
+
+      drawProductImage(progress);
+
+      const accent = template === "luxury-gold" ? "#fbbf24" : "#60a5fa";
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 54px Arial";
+      ctx.fillText(title, canvas.width / 2, layout.titleY);
+
+      ctx.fillStyle = accent;
+      ctx.font = "bold 70px Arial";
+      ctx.fillText(price, canvas.width / 2, layout.priceY);
+
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "28px Arial";
+      ctx.fillText(tagline, canvas.width / 2, layout.taglineY);
+
+      drawCaptions(captions, layout.taglineY + 55, "#cbd5e1");
+
+      drawRoundedRect(canvas.width / 2 - 170, layout.ctaY - 40, 340, 78, 18, "#ffffff");
+      ctx.fillStyle = "#111827";
+      ctx.font = "bold 34px Arial";
+      ctx.fillText(cta, canvas.width / 2, layout.ctaY + 12);
+    }
+
+    function drawViralTemplate(progress, template){
+      const { title, price, tagline, cta, captions } = getValues();
+      const layout = getLayout();
+
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+      if(template === "viral-neon"){
+        grad.addColorStop(0, "#0f172a");
+        grad.addColorStop(0.5, "#7c3aed");
+        grad.addColorStop(1, "#2563eb");
+      } else if(template === "viral-sale"){
+        grad.addColorStop(0, "#7f1d1d");
+        grad.addColorStop(0.5, "#dc2626");
+        grad.addColorStop(1, "#f97316");
+      } else {
+        grad.addColorStop(0, "#111827");
+        grad.addColorStop(0.5, "#1d4ed8");
+        grad.addColorStop(1, "#22c55e");
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for(let i = 0; i < 8; i++){
+        const x = (i * 140 + progress * 260) % (canvas.width + 200) - 100;
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = i % 2 === 0 ? "#22d3ee" : "#f472b6";
+        ctx.fillRect(x, 0, 32, canvas.height);
+        ctx.restore();
+      }
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 26px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("TEEPLATFORM", canvas.width / 2, 80);
+
+      drawProductImage(progress);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 60px Arial";
+      ctx.fillText(title, canvas.width / 2, layout.titleY);
+
+      const accent = template === "viral-sale" ? "#fde047" : "#22d3ee";
+      ctx.fillStyle = accent;
+      ctx.font = "bold 84px Arial";
+      ctx.fillText(price, canvas.width / 2, layout.priceY);
+
+      drawRoundedRect(70, layout.taglineY - 36, canvas.width - 140, 82, 18, "rgba(17,24,39,0.78)");
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 30px Arial";
+      ctx.fillText(tagline, canvas.width / 2, layout.taglineY + 16);
+
+      drawCaptions(captions, layout.taglineY + 90, "#ffffff");
+
+      drawRoundedRect(canvas.width / 2 - 220, layout.ctaY - 45, 440, 92, 22, "#22c55e");
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 40px Arial";
+      ctx.fillText(cta, canvas.width / 2, layout.ctaY + 14);
+    }
+
+    function drawFrame(progress){
+      const { template } = getValues();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if(template.startsWith("luxury")){
+        drawLuxuryTemplate(progress, template);
+      } else {
+        drawViralTemplate(progress, template);
+      }
+
+      updateShareText();
+    }
+
+    function syncModeAndTemplate(){
+      const mode = modeSelect.value;
+      const current = templateSelect.value;
+
+      if(mode === "luxury" && !current.startsWith("luxury")){
+        templateSelect.value = "luxury-gold";
+      }
+
+      if(mode === "viral" && !current.startsWith("viral")){
+        templateSelect.value = "viral-neon";
+      }
+
+      drawFrame(0.2);
+    }
+
+    function startPreview(){
+      previewRunning = true;
+      previewStart = null;
+
+      if(audioUrl){
+        audioPreview.currentTime = 0;
+        audioPreview.play().catch(() => {});
+      }
+
+      function animate(ts){
+        if(!previewRunning) return;
+        if(!previewStart) previewStart = ts;
+        const elapsed = (ts - previewStart) / 1000;
+        const progress = (elapsed % 3) / 3;
+        drawFrame(progress);
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function generateVideo(){
+      const durationSeconds = Number(durationSelect.value);
+      const stream = canvas.captureStream(30);
+      const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => {
+        if(e.data.size > 0){
+          chunks.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.download = "teeplatform-v3-promo.webm";
+        downloadWrap.style.display = "block";
+      };
+
+      recorder.start();
+
+      if(audioUrl){
+        audioPreview.currentTime = 0;
+        audioPreview.play().catch(() => {});
+      }
+
+      const startTime = performance.now();
+
+      function render(ts){
+        const elapsed = (ts - startTime) / 1000;
+        const progress = (elapsed % 3) / 3;
+        drawFrame(progress);
+
+        if(elapsed < durationSeconds){
+          requestAnimationFrame(render);
+        } else {
+          recorder.stop();
+          audioPreview.pause();
+        }
+      }
+
+      requestAnimationFrame(render);
+    }
+
+    audioInput.addEventListener("change", function(){
+      const file = this.files[0];
+      if(!file) return;
+      audioUrl = URL.createObjectURL(file);
+      audioPreview.src = audioUrl;
+    });
+
+    modeSelect.addEventListener("change", syncModeAndTemplate);
+    templateSelect.addEventListener("change", () => drawFrame(0.2));
+    formatSelect.addEventListener("change", applyCanvasFormat);
+    titleInput.addEventListener("input", () => drawFrame(0.2));
+    priceInput.addEventListener("input", () => drawFrame(0.2));
+    taglineInput.addEventListener("input", () => drawFrame(0.2));
+    ctaInput.addEventListener("input", () => drawFrame(0.2));
+    captionsInput.addEventListener("input", () => drawFrame(0.2));
+
+    img.onload = () => drawFrame(0.2);
+    img.onerror = () => drawFrame(0.2);
+
+    applyCanvasFormat();
+    drawFrame(0.2);
+  </script>
+</body>
+</html>
